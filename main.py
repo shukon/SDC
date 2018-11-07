@@ -78,6 +78,11 @@ def calculate_score_for_leaderboard():
 
 
 if __name__ == "__main__":
+
+    # test 1.1a)
+    from imitations import load_imitations
+    print(load_imitations('./data/teacher'))
+
     if len(sys.argv) == 1 or sys.argv[1] == "train":
         train(imitations_folder, trained_network_file)
     elif sys.argv[1] == "teach":

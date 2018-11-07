@@ -1,4 +1,5 @@
 import os
+import logging
 import numpy as np
 import gym
 from pyglet.window import key
@@ -16,7 +17,13 @@ def load_imitations(data_folder):
     observations:   python list of N numpy.ndarrays of size (96, 96, 3)
     actions:        python list of N numpy.ndarrays of size 3
     """
-    pass
+    all_files = os.listdir(data_folder)
+    obs_files = [os.path.join(data_folder, f) for f in all_files if f.startswith('observation')]
+    act_files = [os.path.join(data_folder, f) for f in all_files if f.startswith('action')]
+    logging.getLogger().info("{} observations, {} actions...".format(len(act_files), len(obs_files)))
+    observations = [np.load(f) for f in obs_files]
+    actions = [np.load(f) for f in act_files]
+    return observations, actions
 
 
 def save_imitations(data_folder, actions, observations):
