@@ -1,0 +1,71 @@
+\documentclass[DIN, pagenumber=false, fontsize=11pt, parskip=half]{scrartcl}
+
+\usepackage{ngerman}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{textcomp}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{ amssymb }
+\usepackage{pgfplots}
+
+% for matlab code
+% bw = blackwhite - optimized for print, otherwise source is colored
+%\usepackage[framed,numbered,bw]{mcode}
+
+% for other code
+%\usepackage{listings}
+
+\setlength{\parindent}{0em}
+
+% set section in CM
+\setkomafont{section}{\normalfont\bfseries\Large}
+
+\newcommand{\mytitle}[1]{{\noindent\textbf{#1}}}
+\newcommand{\sol}{\underline{Solution:} }
+\usepackage{fancyhdr}
+
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{ Andreas Rist \\  Joshua Marben}
+\lhead{University Tübingen \\Self Driving Cars WiSe 2018/19}
+\fancyfoot{}
+\lfoot{{ andreas.rist@student.uni-tuebingen.de}\\ { joshua.marben@student.uni-tuebingen.de}}
+\rfoot{ Page \thepage}
+\renewcommand{\headrulewidth}{2pt}
+\renewcommand{\footrulewidth}{1pt}
+\renewcommand\thesection{\underline {Task \arabic{section}:}}
+%===================================
+\begin{document}
+\mytitle{{\huge Excercise 1} \hfill \today}
+%===================================
+\section{Network Design }
+\begin{enumerate}
+	\item[b)]The module $training.py$ contains the training loop for the network. Read and understand its
+	function $train$. Why is it necessary to divide the data into batches? What is an epoch? What do
+	lines $43$ to $48$ do? Please answer shortly and precisely.\\
+	\sol It is necessary to divide your data into batches for 2 reasons. First there is less memory used to train the network and second the network learns faster with smaller batch sizes. A lot papers propagate a batch size of 64 as Optimal learning.\\
+	An epoch is is one forward and one backward pass of all training data.\\
+	We take the batch of our training data, calculate the prediction of the network, compare them to the target values using the cross-entropy-loss-function. Then the loss is used to propagate the error back to the network to adapt the weights in the network. 
+	\item[c)] Define the set of action-classes you want to use and complete the class-methods actions to classes
+	and scores to action in $network.py$\\
+	\sol The provided data of the expert imitations comes as a set of free:
+	\[(steer,gas,brake)\]
+	with
+	\begin{align*}
+		steer&\in\{-1,0,1\}\\
+		gas&\in \{0,0.5\}\\
+		break&\in \{0,0.8\}
+	\end{align*}
+	We want to use following classes:\\ 
+		\{steer\_left\}\\
+		\{steer\_right\}\\
+		\{steer\_left\ and brake\}\\
+		\{steer\_right and brake\}\\		
+		\{brake\}\\
+		\{gas\}\\
+		\{\}\\
+		Accelerating and steering makes no sense to us, because it would conclude in a donut. 
+\end{enumerate}
+
+\end{document}
