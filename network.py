@@ -11,6 +11,28 @@ class ClassificationNetwork(torch.nn.Module):
         super().__init__()
         gpu = torch.device('cuda')
 
+        self.action2name = {
+                torch.tensor([-1.0, 0.0, 0.8]) : 'steer_left_brake',
+                torch.tensor([ 1.0, 0.0, 0.0]) : 'steer_right',
+                torch.tensor([ 1.0, 0.5, 0.0]) : 'steer_right',
+                torch.tensor([ 1.0, 0.0, 0.8]) : 'steer_right_brake',
+                torch.tensor([ 0.0, 0.5, 0.0]) : 'gas',
+                torch.tensor([ 0.0, 0.0, 0.0]) : 'chill',
+                torch.tensor([-1.0, 0.5, 0.0]) : 'steer_left',
+                torch.tensor([ 0.0, 0.0, 0.8]) : 'brake',
+                torch.tensor([-1.0, 0.0, 0.0]) : 'steer_left'}
+        self.name2actions = {v : k for k, v in self.action2name.items()}
+        self.onehot2name = {
+                   torch.tensor([1, 0, 0, 0, 0, 0, 0]) : 'steer_left',
+                   torch.tensor([0, 1, 0, 0, 0, 0, 0]) : 'steer_right',
+                   torch.tensor([0, 0, 1, 0, 0, 0, 0]) : 'steer_left_brake',
+                   torch.tensor([0, 0, 0, 1, 0, 0, 0]) : 'steer_right_brake',
+                   torch.tensor([0, 0, 0, 0, 1, 0, 0]) : 'brake',
+                   torch.tensor([0, 0, 0, 0, 0, 1, 0]) : 'gas',
+                   torch.tensor([0, 0, 0, 0, 0, 0, 1]) : 'chill'
+                   }
+        self.name2onehot = {v : k for k, v in self.onehot2name.items()}
+
 
     def forward(self, observation):
         """
@@ -33,7 +55,9 @@ class ClassificationNetwork(torch.nn.Module):
         actions:        python list of N torch.Tensors of size 3
         return          python list of N torch.Tensors of size number_of_classes
         """
-        pass
+
+        return [self.name2onehot[self.action2name[a]] for a in actions]
+
 
     def scores_to_action(self, scores):
         """
@@ -43,7 +67,10 @@ class ClassificationNetwork(torch.nn.Module):
         scores:         python list of torch.Tensors of size number_of_classes
         return          (float, float, float)
         """
-        pass
+        max_index = tensor.argmax(scores)
+        onehot = tensor.zeros(len(self.actions_to_classes))
+        onehot[max_index] = 1
+        return self.name2action[self.onehot2name[onehot]]
 
     def extract_sensor_values(self, observation, batch_size):
         """

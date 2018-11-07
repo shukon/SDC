@@ -67,4 +67,4 @@ def cross_entropy_loss(batch_out, batch_gt):
     batch_gt:       torch.Tensor of size (batch_size, number_of_classes)
     return          float
     """
-    pass
+    return tf.losses.softmax_cross_entropy(batch_gt, batch_out)
