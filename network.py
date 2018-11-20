@@ -119,8 +119,8 @@ class ClassificationNetwork(torch.nn.Module):
         scores:         python list of torch.Tensors of size number_of_classes
         return          (float, float, float)
         """
-        max_index = tensor.argmax(scores)
-        onehot = tensor.zeros(len(self.actions_to_classes))
+        max_index = torch.max(scores, 1)[1]
+        onehot = torch.zeros(len(self.actions_to_classes))
         onehot[max_index] = 1
         act = self.name2action[self.onehot2name[onehot]]
         return torch.tensor(act)

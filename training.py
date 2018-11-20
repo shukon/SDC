@@ -43,7 +43,7 @@ def train(data_folder, trained_network_file):
                 batch_gt = torch.reshape(torch.cat(batch_gt, dim=0),
                                          (-1, number_of_classes))
 
-                batch_out = infer_actigion(batch_in)
+                batch_out = infer_action(batch_in)
                 loss = cross_entropy_loss(batch_out, batch_gt)
 
                 optimizer.zero_grad()
