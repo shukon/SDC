@@ -13,6 +13,7 @@ class ClassificationNetwork(torch.nn.Module):
         super().__init__()
         gpu = torch.device('cuda')
 
+        #view (****) this please
         self.action2name = {
                 str(torch.tensor([-1.0, 0.0, 0.8])) : 'steer_left_brake',
                 str(torch.tensor([ 1.0, 0.0, 0.0])) : 'steer_right',
@@ -84,9 +85,33 @@ class ClassificationNetwork(torch.nn.Module):
         actions:        python list of N torch.Tensors of size 3
         return          python list of N torch.Tensors of size number_of_classes
         """
-        actions = [self.action2name[str(a)] for a in actions]
-        return [self.name2onehot[a] for a in actions]
-
+        #(****) marks the order of these:
+        listofclasses = []
+        for a in actions:
+            if(torch.all(torch.eq(a,torch.tensor([-1.0, 0.0, 0.8])))): 
+                listofclasses.append(torch.tensor([0, 0, 1, 0, 0, 0, 0]))
+            elif(torch.all(torch.eq(a,torch.tensor([ 1.0, 0.5, 0.0])))): 
+                listofclasses.append(torch.tensor([0, 1, 0, 0, 0, 0, 0]))
+            elif(torch.all(torch.eq(a,torch.tensor([ 1.0, 0.0, 0.0])))): 
+                listofclasses.append(torch.tensor([0, 1, 0, 0, 0, 0, 0]))
+            elif(torch.all(torch.eq(a,torch.tensor([ 1.0, 0.0, 0.8])))): 
+                listofclasses.append(torch.tensor([0, 0, 0, 1, 0, 0, 0]))
+            elif(torch.all(torch.eq(a,torch.tensor([ 0.0, 0.5, 0.0])))): 
+                listofclasses.append(torch.tensor([0, 0, 0, 0, 0, 1, 0]))
+            elif(torch.all(torch.eq(a,torch.tensor([ 0.0, 0.0, 0.0])))): 
+                listofclasses.append(torch.tensor([0, 0, 0, 0, 0, 0, 1]))
+            elif(torch.all(torch.eq(a,torch.tensor([-1.0, 0.5, 0.0])))): 
+                listofclasses.append(torch.tensor([1, 0, 0, 0, 0, 0, 0]))
+            elif(torch.all(torch.eq(a,torch.tensor([ 0.0, 0.0, 0.8])))): 
+                listofclasses.append(torch.tensor([0, 1, 0, 0, 1, 0, 0]))
+            elif(torch.all(torch.eq(a,torch.tensor([-1.0, 0.0, 0.0])))): 
+                listofclasses.append(torch.tensor([1, 0, 0, 0, 0, 0, 0]))
+            else: listofclasses.append(torch.tensor([0, 0, 0, 0, 0, 0, 0]))
+            
+        return listofclasses    
+        #actions = [[self.action2name[str(t)] for t in a] for a in actions]
+        #naureturn [self.name2onehot[a] for a in actions]
+        
 
     def scores_to_action(self, scores):
         """

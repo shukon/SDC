@@ -24,7 +24,7 @@ def load_imitations(data_folder):
     logging.getLogger().info("{} observations, {} actions...".format(len(act_files), len(obs_files)))
     observations = [np.load(f) for f in obs_files]
     actions = [np.load(f) for f in act_files]
-    logging.getLogger().info("actions: {}".format(set([tuple(a) for a in actions])))
+   # logging.getLogger().info("actions: {}".format(set([tuple(a) for a in actions])))
     return observations, actions
 
 
@@ -45,6 +45,8 @@ def save_imitations(data_folder, actions, observations):
     if(testNr >= 99999):
         raise ValueError('The amount of testdata is to damn high') 
     else:
+        #print(actions)
+        #print(observations)
         np.save(os.path.join(data_folder,"observation_%05d" %testNr),observations)
         np.save(os.path.join(data_folder,"action_%05d" %testNr),actions)
     
