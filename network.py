@@ -14,15 +14,15 @@ class ClassificationNetwork(torch.nn.Module):
         gpu = torch.device('cuda')
 
         self.action2name = {
-                (-1.0, 0.0, 0.8) : 'steer_left_brake',
-                ( 1.0, 0.0, 0.0) : 'steer_right',
-                ( 1.0, 0.5, 0.0) : 'steer_right',
-                ( 1.0, 0.0, 0.8) : 'steer_right_brake',
-                ( 0.0, 0.5, 0.0) : 'gas',
-                ( 0.0, 0.0, 0.0) : 'chill',
-                (-1.0, 0.5, 0.0) : 'steer_left',
-                ( 0.0, 0.0, 0.8) : 'brake',
-                (-1.0, 0.0, 0.0) : 'steer_left'}
+                str(torch.tensor([-1.0, 0.0, 0.8])) : 'steer_left_brake',
+                str(torch.tensor([ 1.0, 0.0, 0.0])) : 'steer_right',
+                str(torch.tensor([ 1.0, 0.5, 0.0])) : 'steer_right',
+                str(torch.tensor([ 1.0, 0.0, 0.8])) : 'steer_right_brake',
+                str(torch.tensor([ 0.0, 0.5, 0.0])) : 'gas',
+                str(torch.tensor([ 0.0, 0.0, 0.0])) : 'chill',
+                str(torch.tensor([-1.0, 0.5, 0.0])) : 'steer_left',
+                str(torch.tensor([ 0.0, 0.0, 0.8])) : 'brake',
+                str(torch.tensor([-1.0, 0.0, 0.0])) : 'steer_left'}
         self.name2actions = {v : k for k, v in self.action2name.items()}
         self.onehot2name = {
                    torch.tensor([1, 0, 0, 0, 0, 0, 0]) : 'steer_left',
@@ -83,15 +83,7 @@ class ClassificationNetwork(torch.nn.Module):
         actions:        python list of N torch.Tensors of size 3
         return          python list of N torch.Tensors of size number_of_classes
         """
-        print(self.action2name.keys())
-        print(set([t.shape for t in actions]))
-        for a in actions:
-            tmp = tuple(a)
-            tmp = [tuple(t) for t in tmp]
-            print(tmp)
-            tmp = tuple(tmp)
-            print(tmp)
-        actions = [self.action2name[tuple([tuple(t) for t in a])] for a in actions]
+        actions = [self.action2name[str(a)] for a in actions]
         return [self.name2onehot[a] for a in actions]
 
 
