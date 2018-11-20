@@ -12,7 +12,7 @@ def train(data_folder, trained_network_file):
     Function for training the network.
     """
     infer_action = ClassificationNetwork()
-    optimizer = torch.optim.Adam(infer_action.parameters(), lr=1e-2)
+    optimizer = torch.optim.Adam(infer_action.parameters(), lr=1e-4)
     observations, actions = load_imitations(data_folder)
     observations = [torch.Tensor(observation) for observation in observations]
     actions = [torch.Tensor(action) for action in actions]
@@ -21,8 +21,8 @@ def train(data_folder, trained_network_file):
                                       infer_action.actions_to_classes(actions))]
     gpu = torch.device('cpu')
 
-    nr_epochs = 10
-    batch_size = 64
+    nr_epochs = 300
+    batch_size = 105
     number_of_classes = 7  # needs to be changed
     start_time = time.time()
 

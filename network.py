@@ -15,15 +15,15 @@ class ClassificationNetwork(torch.nn.Module):
 
         #view (****) this please
         self.action2name = {
-                str(torch.tensor([-1.0, 0.0, 0.8])) : 'steer_left_brake',
-                str(torch.tensor([ 1.0, 0.0, 0.0])) : 'steer_right',
-                str(torch.tensor([ 1.0, 0.5, 0.0])) : 'steer_right',
-                str(torch.tensor([ 1.0, 0.0, 0.8])) : 'steer_right_brake',
-                str(torch.tensor([ 0.0, 0.5, 0.0])) : 'gas',
-                str(torch.tensor([ 0.0, 0.0, 0.0])) : 'chill',
-                str(torch.tensor([-1.0, 0.5, 0.0])) : 'steer_left',
-                str(torch.tensor([ 0.0, 0.0, 0.8])) : 'brake',
-                str(torch.tensor([-1.0, 0.0, 0.0])) : 'steer_left'}
+                torch.tensor([-1.0, 0.0, 0.8]) : 'steer_left_brake',
+                torch.tensor([ 1.0, 0.0, 0.0]) : 'steer_right',
+                torch.tensor([ 1.0, 0.5, 0.0]) : 'steer_right',
+                torch.tensor([ 1.0, 0.0, 0.8]) : 'steer_right_brake',
+                torch.tensor([ 0.0, 0.5, 0.0]) : 'gas',
+                torch.tensor([ 0.0, 0.0, 0.0]) : 'chill',
+                torch.tensor([-1.0, 0.5, 0.0]) : 'steer_left',
+                torch.tensor([ 0.0, 0.0, 0.8]) : 'brake',
+                torch.tensor([-1.0, 0.0, 0.0]) : 'steer_left'}
         self.name2actions = {v : k for k, v in self.action2name.items()}
         self.onehot2name = {
                    torch.tensor([1, 0, 0, 0, 0, 0, 0]) : 'steer_left',
@@ -54,7 +54,7 @@ class ClassificationNetwork(torch.nn.Module):
         return         torch.Tensor of size (batch_size, number_of_classes)
         """
         x = observation.permute([0,3,1,2])
-        # Max pooling over a (2, 2) windowgit 
+        # Max pooling over a (2, 2) windowgit
         x = F.max_pool2d(F.relu(self.conv1(x)), (2, 2))
         # If the size is a square you can only specify a single number
         x = F.max_pool2d(F.relu(self.conv2(x)), 2)
@@ -86,30 +86,30 @@ class ClassificationNetwork(torch.nn.Module):
         #(****) marks the order of these:
         listofclasses = []
         for a in actions:
-            if(torch.all(torch.eq(a,torch.tensor([-1.0, 0.0, 0.8])))): 
+            if(torch.all(torch.eq(a,torch.tensor([-1.0, 0.0, 0.8])))):
                 listofclasses.append(torch.tensor([0, 0, 1, 0, 0, 0, 0]))
-            elif(torch.all(torch.eq(a,torch.tensor([ 1.0, 0.5, 0.0])))): 
+            elif(torch.all(torch.eq(a,torch.tensor([ 1.0, 0.5, 0.0])))):
                 listofclasses.append(torch.tensor([0, 1, 0, 0, 0, 0, 0]))
-            elif(torch.all(torch.eq(a,torch.tensor([ 1.0, 0.0, 0.0])))): 
+            elif(torch.all(torch.eq(a,torch.tensor([ 1.0, 0.0, 0.0])))):
                 listofclasses.append(torch.tensor([0, 1, 0, 0, 0, 0, 0]))
-            elif(torch.all(torch.eq(a,torch.tensor([ 1.0, 0.0, 0.8])))): 
+            elif(torch.all(torch.eq(a,torch.tensor([ 1.0, 0.0, 0.8])))):
                 listofclasses.append(torch.tensor([0, 0, 0, 1, 0, 0, 0]))
-            elif(torch.all(torch.eq(a,torch.tensor([ 0.0, 0.5, 0.0])))): 
+            elif(torch.all(torch.eq(a,torch.tensor([ 0.0, 0.5, 0.0])))):
                 listofclasses.append(torch.tensor([0, 0, 0, 0, 0, 1, 0]))
-            elif(torch.all(torch.eq(a,torch.tensor([ 0.0, 0.0, 0.0])))): 
+            elif(torch.all(torch.eq(a,torch.tensor([ 0.0, 0.0, 0.0])))):
                 listofclasses.append(torch.tensor([0, 0, 0, 0, 0, 0, 1]))
-            elif(torch.all(torch.eq(a,torch.tensor([-1.0, 0.5, 0.0])))): 
+            elif(torch.all(torch.eq(a,torch.tensor([-1.0, 0.5, 0.0])))):
                 listofclasses.append(torch.tensor([1, 0, 0, 0, 0, 0, 0]))
-            elif(torch.all(torch.eq(a,torch.tensor([ 0.0, 0.0, 0.8])))): 
+            elif(torch.all(torch.eq(a,torch.tensor([ 0.0, 0.0, 0.8])))):
                 listofclasses.append(torch.tensor([0, 1, 0, 0, 1, 0, 0]))
-            elif(torch.all(torch.eq(a,torch.tensor([-1.0, 0.0, 0.0])))): 
+            elif(torch.all(torch.eq(a,torch.tensor([-1.0, 0.0, 0.0])))):
                 listofclasses.append(torch.tensor([1, 0, 0, 0, 0, 0, 0]))
-            else: listofclasses.append(torch.tensor([0, 0, 0, 0, 0, 0, 0]))
-            
-        return listofclasses    
+            else: listofclasses.append(torch.tensor([0, 0, 0, 0, 0, 0, 1]))
+
+        return listofclasses
         #actions = [[self.action2name[str(t)] for t in a] for a in actions]
         #naureturn [self.name2onehot[a] for a in actions]
-        
+
 
     def scores_to_action(self, scores):
         """
@@ -119,11 +119,32 @@ class ClassificationNetwork(torch.nn.Module):
         scores:         python list of torch.Tensors of size number_of_classes
         return          (float, float, float)
         """
-        max_index = torch.max(scores, 1)[1]
-        onehot = torch.zeros(len(self.actions_to_classes))
-        onehot[max_index] = 1
-        act = self.name2action[self.onehot2name[onehot]]
-        return torch.tensor(act)
+        #max_index = torch.max(scores, 1)[1]
+        #onehot = torch.zeros(7)
+        #onehot[max_index] = 1
+        #act = self.name2actions[self.onehot2name[onehot]]
+        print(scores)
+        max = torch.max(scores)
+        classtensor = (scores == max)
+        print(classtensor)
+        classtensor = classtensor.type(torch.long)
+        if(torch.all(torch.eq(classtensor,torch.tensor([1, 0, 0, 0, 0, 0, 0])))):
+            return (-1.0, 0.0, 0.0) #steer_left
+        elif(torch.all(torch.eq(classtensor,torch.tensor([0, 1, 0, 0, 0, 0, 0])))):
+            return (1.0, 0.0, 0.0) #steer_right
+        elif(torch.all(torch.eq(classtensor,torch.tensor([0, 0, 1, 0, 0, 0, 0])))):
+            return (-1.0, 0.0, 0.8) #steer_left_brake
+        elif(torch.all(torch.eq(classtensor,torch.tensor([0, 0, 0, 1, 0, 0, 0])))):
+            return (1.0, 0.0, 0.8) #steer_right_brake
+        elif(torch.all(torch.eq(classtensor,torch.tensor([0, 0, 0, 0, 1, 0, 0])))):
+            return (0.0, 0.0, 0.8) #brake
+        elif(torch.all(torch.eq(classtensor,torch.tensor([0, 0, 0, 0, 0, 1, 0])))):
+            return (0.0, 0.5, 0.0) #gas
+        elif(torch.all(torch.eq(classtensor,torch.tensor([0, 0, 0, 0, 0, 0, 1])))):
+            return (0.0, 0.0, 0.0) #chill brah
+
+        return (0.0, 0.0, 0.8)
+
 
     def extract_sensor_values(self, observation, batch_size):
         """
