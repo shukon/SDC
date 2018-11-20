@@ -44,6 +44,8 @@ def save_imitations(data_folder, actions, observations):
     if(testNr >= 99999):
         raise ValueError('The amount of testdata is to damn high') 
     else:
+        #print(actions)
+        #print(observations)
         np.save(os.path.join(data_folder,"observation_%05d" %testNr),observations)
         np.save(os.path.join(data_folder,"action_%05d" %testNr),actions)
     
