@@ -39,9 +39,9 @@ class ClassificationNetwork(torch.nn.Module):
         # Network
 
         self.conv1 = nn.Conv2d(3, 32, 9)
-        self.conv2 = nn.Conv2d(32, 64, 5)
+        self.conv2 = nn.Conv2d(32, 10, 5)
         # an affine operation: y = Wx + b
-        self.fc1 = nn.Linear(64 * 5 * 5, 120)
+        self.fc1 = nn.Linear(16* 10 * 5 * 5, 120)
         self.fc2 = nn.Linear(120, 84)
         self.fc3 = nn.Linear(84, 7)
 
@@ -61,7 +61,7 @@ class ClassificationNetwork(torch.nn.Module):
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
-        x = F.softmax(x)
+        #x = F.softmax(x)
         return x
 
     def _num_flat_features(self, x):

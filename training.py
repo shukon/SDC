@@ -1,5 +1,6 @@
 import torch
 import random
+import torch.nn as nn
 import time
 from network import ClassificationNetwork
 from imitations import load_imitations
@@ -39,7 +40,6 @@ def train(data_folder, trained_network_file):
                 batch_in = torch.reshape(torch.cat(batch_in, dim=0),
                                          (-1, 96, 96, 3))
                 batch_in = batch_in.permute([0, 3, 1, 2])
-                print(torch.cat(batch_gt, dim=0))
                 batch_gt = torch.reshape(torch.cat(batch_gt, dim=0),
                                          (-1, number_of_classes))
 
@@ -70,4 +70,7 @@ def cross_entropy_loss(batch_out, batch_gt):
     batch_gt:       torch.Tensor of size (batch_size, number_of_classes)
     return          float
     """
-    return tf.losses.softmax_cross_entropy(batch_gt, batch_out)
+    loss = nn.CrossEntropyLoss()
+    batch_gt = torch.max(batch_gt, 1)[1]
+    return loss(batch_out, batch_gt)
+    #return tf.losses.softmax_cross_entropy(batch_gt, batch_out)
