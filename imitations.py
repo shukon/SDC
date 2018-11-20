@@ -24,7 +24,6 @@ def load_imitations(data_folder):
     logging.getLogger().info("{} observations, {} actions...".format(len(act_files), len(obs_files)))
     observations = [np.load(f) for f in obs_files]
     actions = [np.load(f) for f in act_files]
-    logging.getLogger().info("actions: {}".format(set([tuple(a) for a in actions])))
     return observations, actions
 
 

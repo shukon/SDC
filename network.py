@@ -36,9 +36,7 @@ class ClassificationNetwork(torch.nn.Module):
         self.name2onehot = {v : k for k, v in self.onehot2name.items()}
 
         # Network
-        # 1 input image channel, 6 output channels, 5x5 square convolution
-        # TODO do we want 1 image channel or 3 (R/G/B)??
-        # kernel
+
         self.conv1 = nn.Conv2d(3, 32, 9)
         self.conv2 = nn.Conv2d(32, 64, 5)
         # an affine operation: y = Wx + b
@@ -54,7 +52,6 @@ class ClassificationNetwork(torch.nn.Module):
         observation:   torch.Tensor of size (batch_size, 96, 96, 3)
         return         torch.Tensor of size (batch_size, number_of_classes)
         """
-        print(observation.shape)
         # Max pooling over a (2, 2) window
         x = F.max_pool2d(F.relu(self.conv1(observation)), (2, 2))
         # If the size is a square you can only specify a single number

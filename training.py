@@ -38,6 +38,7 @@ def train(data_folder, trained_network_file):
             if (batch_idx + 1) % batch_size == 0 or batch_idx == len(batches) - 1:
                 batch_in = torch.reshape(torch.cat(batch_in, dim=0),
                                          (-1, 96, 96, 3))
+                batch_in = batch_in.permute([0, 3, 1, 2])
                 print(torch.cat(batch_gt, dim=0))
                 batch_gt = torch.reshape(torch.cat(batch_gt, dim=0),
                                          (-1, number_of_classes))
