@@ -4,6 +4,7 @@ import time
 from network import ClassificationNetwork
 from imitations import load_imitations
 
+CUDA_VISIBLE_DEVICES=""
 
 def train(data_folder, trained_network_file):
     """
@@ -17,11 +18,11 @@ def train(data_folder, trained_network_file):
 
     batches = [batch for batch in zip(observations,
                                       infer_action.actions_to_classes(actions))]
-    gpu = torch.device('cuda')
+    gpu = torch.device('cpu')
 
     nr_epochs = 100
     batch_size = 64
-    number_of_classes = 0  # needs to be changed
+    number_of_classes = 7  # needs to be changed
     start_time = time.time()
 
     for epoch in range(nr_epochs):
@@ -37,6 +38,7 @@ def train(data_folder, trained_network_file):
             if (batch_idx + 1) % batch_size == 0 or batch_idx == len(batches) - 1:
                 batch_in = torch.reshape(torch.cat(batch_in, dim=0),
                                          (-1, 96, 96, 3))
+                print(torch.cat(batch_gt, dim=0))
                 batch_gt = torch.reshape(torch.cat(batch_gt, dim=0),
                                          (-1, number_of_classes))
 
