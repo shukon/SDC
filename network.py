@@ -1,4 +1,6 @@
 import torch
+import torch.nn as nn
+import torch.nn.functional as F
 
 
 class ClassificationNetwork(torch.nn.Module):
@@ -12,15 +14,15 @@ class ClassificationNetwork(torch.nn.Module):
         gpu = torch.device('cuda')
 
         self.action2name = {
-                torch.tensor([-1.0, 0.0, 0.8]) : 'steer_left_brake',
-                torch.tensor([ 1.0, 0.0, 0.0]) : 'steer_right',
-                torch.tensor([ 1.0, 0.5, 0.0]) : 'steer_right',
-                torch.tensor([ 1.0, 0.0, 0.8]) : 'steer_right_brake',
-                torch.tensor([ 0.0, 0.5, 0.0]) : 'gas',
-                torch.tensor([ 0.0, 0.0, 0.0]) : 'chill',
-                torch.tensor([-1.0, 0.5, 0.0]) : 'steer_left',
-                torch.tensor([ 0.0, 0.0, 0.8]) : 'brake',
-                torch.tensor([-1.0, 0.0, 0.0]) : 'steer_left'}
+                (-1.0, 0.0, 0.8) : 'steer_left_brake',
+                ( 1.0, 0.0, 0.0) : 'steer_right',
+                ( 1.0, 0.5, 0.0) : 'steer_right',
+                ( 1.0, 0.0, 0.8) : 'steer_right_brake',
+                ( 0.0, 0.5, 0.0) : 'gas',
+                ( 0.0, 0.0, 0.0) : 'chill',
+                (-1.0, 0.5, 0.0) : 'steer_left',
+                ( 0.0, 0.0, 0.8) : 'brake',
+                (-1.0, 0.0, 0.0) : 'steer_left'}
         self.name2actions = {v : k for k, v in self.action2name.items()}
         self.onehot2name = {
                    torch.tensor([1, 0, 0, 0, 0, 0, 0]) : 'steer_left',
@@ -33,6 +35,16 @@ class ClassificationNetwork(torch.nn.Module):
                    }
         self.name2onehot = {v : k for k, v in self.onehot2name.items()}
 
+        # Network
+        # 1 input image channel, 6 output channels, 5x5 square convolution
+        # TODO do we want 1 image channel or 3 (R/G/B)??
+        # kernel
+        self.conv1 = nn.Conv2d(1, 6, 5)
+        self.conv2 = nn.Conv2d(6, 16, 5)
+        # an affine operation: y = Wx + b
+        self.fc1 = nn.Linear(16 * 5 * 5, 120)
+        self.fc2 = nn.Linear(120, 84)
+        self.fc3 = nn.Linear(84, 10)
 
     def forward(self, observation):
         """
@@ -42,7 +54,23 @@ class ClassificationNetwork(torch.nn.Module):
         observation:   torch.Tensor of size (batch_size, 96, 96, 3)
         return         torch.Tensor of size (batch_size, number_of_classes)
         """
-        pass
+        # Max pooling over a (2, 2) window
+        x = F.max_pool2d(F.relu(self.conv1(observation)), (2, 2))
+        # If the size is a square you can only specify a single number
+        x = F.max_pool2d(F.relu(self.conv2(x)), 2)
+        x = x.view(-1, self._num_flat_features(x))
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        x = self.fc3(x)
+        x = F.softmax(x)
+        return x
+
+    def _num_flat_features(self, x):
+        size = x.size()[1:]  # all dimensions except the batch dimension
+        num_features = 1
+        for s in size:
+            num_features *= s
+        return num_features
 
     def actions_to_classes(self, actions):
         """
@@ -55,8 +83,16 @@ class ClassificationNetwork(torch.nn.Module):
         actions:        python list of N torch.Tensors of size 3
         return          python list of N torch.Tensors of size number_of_classes
         """
-
-        return [self.name2onehot[self.action2name[a]] for a in actions]
+        print(self.action2name.keys())
+        print(set([t.shape for t in actions]))
+        for a in actions:
+            tmp = tuple(a)
+            tmp = [tuple(t) for t in tmp]
+            print(tmp)
+            tmp = tuple(tmp)
+            print(tmp)
+        actions = [self.action2name[tuple([tuple(t) for t in a])] for a in actions]
+        return [self.name2onehot[a] for a in actions]
 
 
     def scores_to_action(self, scores):
@@ -70,7 +106,8 @@ class ClassificationNetwork(torch.nn.Module):
         max_index = tensor.argmax(scores)
         onehot = tensor.zeros(len(self.actions_to_classes))
         onehot[max_index] = 1
-        return self.name2action[self.onehot2name[onehot]]
+        act = self.name2action[self.onehot2name[onehot]]
+        return torch.tensor(act)
 
     def extract_sensor_values(self, observation, batch_size):
         """
