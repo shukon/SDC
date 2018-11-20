@@ -54,7 +54,7 @@ class ClassificationNetwork(torch.nn.Module):
         return         torch.Tensor of size (batch_size, number_of_classes)
         """
         x = observation.permute([0,3,1,2])
-        # Max pooling over a (2, 2) window
+        # Max pooling over a (2, 2) windowgit 
         x = F.max_pool2d(F.relu(self.conv1(x)), (2, 2))
         # If the size is a square you can only specify a single number
         x = F.max_pool2d(F.relu(self.conv2(x)), 2)
