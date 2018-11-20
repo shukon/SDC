@@ -2,6 +2,7 @@ import os
 import logging
 import numpy as np
 import gym
+import re
 from pyglet.window import key
 
 
@@ -38,8 +39,16 @@ def save_imitations(data_folder, actions, observations):
     observations:   python list of N numpy.ndarrays of size (96, 96, 3)
     actions:        python list of N numpy.ndarrays of size 3
     """
-    pass
-
+    list = os.listdir(data_folder)  
+    testNr = max([int(re.sub("\D", "", x)) for x in list ])
+    testNr += 1
+    if(testNr >= 99999):
+        raise ValueError('The amount of testdata is to damn high') 
+    else:
+        np.save(os.path.join(data_folder,"observation_%05d" %testNr),observations)
+        np.save(os.path.join(data_folder,"action_%05d" %testNr),actions)
+    
+    
 
 class ControlStatus:
     """
