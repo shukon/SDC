@@ -40,14 +40,16 @@ def save_imitations(data_folder, actions, observations):
     """
     list = os.listdir(data_folder)  
     testNr = max([int(re.sub("\D", "", x)) for x in list ])
-    testNr += 1
-    if(testNr >= 99999):
-        raise ValueError('The amount of testdata is to damn high') 
-    else:
-        #print(actions)
-        #print(observations)
-        np.save(os.path.join(data_folder,"observation_%05d" %testNr),observations)
-        np.save(os.path.join(data_folder,"action_%05d" %testNr),actions)
+    
+    for action,observation in zip(actions,observations):
+        testNr+=1
+        if(testNr >= 99999):
+            raise ValueError('The amount of testdata is to damn high') 
+        else:
+            #print(actions)
+            #print(observations)
+            np.save(os.path.join(data_folder,"observation_%05d" %testNr),observation)
+            np.save(os.path.join(data_folder,"action_%05d" %testNr),action)
     
     
 
