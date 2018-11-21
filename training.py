@@ -5,13 +5,17 @@ import time
 from network import ClassificationNetwork
 from imitations import load_imitations
 
-CUDA_VISIBLE_DEVICES=""
-
 def train(data_folder, trained_network_file):
     """
     Function for training the network.
     """
+    use_cuda=True
     infer_action = ClassificationNetwork()
+    if use_cuda:
+        infer_action.cuda()
+        #infer_action = torch.nn.DataParallel(infer_action, device_ids=range(torch.cuda.device_count()))
+        #cudnn.benchmark = True
+    gpu = torch.device('cuda' if use_cuda else 'cpu')
     optimizer = torch.optim.Adam(infer_action.parameters(), lr=1e-4)
     observations, actions = load_imitations(data_folder)
     observations = [torch.Tensor(observation) for observation in observations]
@@ -19,7 +23,6 @@ def train(data_folder, trained_network_file):
 
     batches = [batch for batch in zip(observations,
                                       infer_action.actions_to_classes(actions))]
-    gpu = torch.device('cpu')
 
     nr_epochs = 300
     batch_size = 105

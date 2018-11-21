@@ -13,6 +13,8 @@ class ClassificationNetwork(torch.nn.Module):
         super().__init__()
         gpu = torch.device('cuda')
 
+        self.use_sensor = True
+
         #view (****) this please
         self.action2name = {
                 torch.tensor([-1.0, 0.0, 0.8]) : 'steer_left_brake',
@@ -20,7 +22,7 @@ class ClassificationNetwork(torch.nn.Module):
                 torch.tensor([ 1.0, 0.5, 0.0]) : 'steer_right',
                 torch.tensor([ 1.0, 0.0, 0.8]) : 'steer_right_brake',
                 torch.tensor([ 0.0, 0.5, 0.0]) : 'gas',
-                torch.tensor([ 0.0, 0.0, 0.0]) : 'chill',
+                torch.tensor([ 0.0, 0.1, 0.0]) : 'chill',
                 torch.tensor([-1.0, 0.5, 0.0]) : 'steer_left',
                 torch.tensor([ 0.0, 0.0, 0.8]) : 'brake',
                 torch.tensor([-1.0, 0.0, 0.0]) : 'steer_left'}
@@ -40,8 +42,11 @@ class ClassificationNetwork(torch.nn.Module):
 
         self.conv1 = nn.Conv2d(3, 32, 9)
         self.conv2 = nn.Conv2d(32, 10, 5)
-        # an affine operation: y = Wx + b
-        self.fc1 = nn.Linear(16* 10 * 5 * 5, 120)
+    # an affine operation: y = Wx + b
+        if self.use_sensor:
+            self.fc1 = nn.Linear(16 * 10 * 5 * 5 + 7, 120)
+        else:
+            self.fc1 = nn.Linear(16 * 10 * 5 * 5, 120)
         self.fc2 = nn.Linear(120, 84)
         self.fc3 = nn.Linear(84, 7)
 
@@ -59,6 +64,9 @@ class ClassificationNetwork(torch.nn.Module):
         # If the size is a square you can only specify a single number
         x = F.max_pool2d(F.relu(self.conv2(x)), 2)
         x = x.view(-1, self._num_flat_features(x))
+        if self.use_sensor:
+            speed, abs_sensors, steering, gyroscope = self.extract_sensor_values(observation, x.shape[0])
+            x = torch.cat((x, speed, abs_sensors, steering, gyroscope), 1)
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
@@ -123,10 +131,8 @@ class ClassificationNetwork(torch.nn.Module):
         #onehot = torch.zeros(7)
         #onehot[max_index] = 1
         #act = self.name2actions[self.onehot2name[onehot]]
-        print(scores)
-        max = torch.max(scores)
-        classtensor = (scores == max)
-        print(classtensor)
+        max_idx = torch.max(scores)
+        classtensor = (scores == max_idx)
         classtensor = classtensor.type(torch.long)
         if(torch.all(torch.eq(classtensor,torch.tensor([1, 0, 0, 0, 0, 0, 0])))):
             return (-1.0, 0.0, 0.0) #steer_left
