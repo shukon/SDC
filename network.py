@@ -22,7 +22,7 @@ class ClassificationNetwork(torch.nn.Module):
                 torch.tensor([ 1.0, 0.5, 0.0]) : 'steer_right',
                 torch.tensor([ 1.0, 0.0, 0.8]) : 'steer_right_brake',
                 torch.tensor([ 0.0, 0.5, 0.0]) : 'gas',
-                torch.tensor([ 0.0, 0.1, 0.0]) : 'chill',
+                torch.tensor([ 0.0, 0.0, 0.0]) : 'chill',
                 torch.tensor([-1.0, 0.5, 0.0]) : 'steer_left',
                 torch.tensor([ 0.0, 0.0, 0.8]) : 'brake',
                 torch.tensor([-1.0, 0.0, 0.0]) : 'steer_left'}

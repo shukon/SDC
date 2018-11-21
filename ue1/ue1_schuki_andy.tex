@@ -94,16 +94,38 @@
 	\end{enumerate}
 \end{enumerate}
 \section{Network Improvements}
-\begin{enumerate}[a)]
+\begin{enumerate}
 	\item \textbf{Observations:} What does it do?\\\sol
           These enables you to encoperate informations of speed, abs, steer and gyroscope into your network.
           Therefore not only positions of the vehicle can be considered by the network, but also any of these sensors.
           Therefore it is possible to make different conclusions for seemingly same situations (sometimes the car would
           just not drive because with the street-layout ahead, no gas would be optimal in most cases - however, with
-          sensor data, this does not happen because the network can see that with no acceleration it is never good to
+          sensor data, this should not happen because the network can see that with no acceleration it is never good to
           not drive at all).\\
 	
 	How does the performance change?
 	\\\sol Curves after high speed passes now enable the car to brake first, as it would usually conclude into leaving the racetrack.	
+	\item \textbf{MultiClass prediction:}\\\sol
+          While we did not evaluate this, we expect this to require higher training times, because we have more complex
+          legal target structures. We also have to change the interpretation (obviously) because we need not the maximum
+          of the predicted probabilities, but all above a certain threshhold (maybe left/right and up/down SHOULD be
+          exclusive...)
+
+	\item \textbf{Classification vs Regression:}\\\sol
+          Here, we want to directly predict the action-tuple (steer, gas, brake). Mean squared error could be used as
+          loss-function. This approach allows a much finer control of the car, since we can accelerate a little bit and
+          steer left and right much smoother. However, our training data might not be suited, since it contains only
+          information for a fixed amount of different tuple-combinations. Maybe the network could interpolate the values
+          inbetween - however this would be much better with more versatile (and exploratory) training data.
+
+	\item \textbf{Data Augmentation:}\\\sol
+          We expect the performance to increase, since the network sees more possible actions with possible observation
+          and the thus introduced noise can help avoid overfitting and increase performance by providing more examples
+          on good actions as well.
+
+	\item \textbf{Fine-Tuning:}\\\sol
+          All the things from the text are good ideas. Especially class imbalance might be important. An automated
+          search for hyperparameters might be rewarding as well. Next time, we'll start sooner!!
+
 \end{enumerate}
 \end{document}

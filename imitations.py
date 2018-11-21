@@ -3,7 +3,7 @@ import logging
 import numpy as np
 import gym
 import re
-from pyglet.window import key
+#from pyglet.window import key
 
 
 def load_imitations(data_folder):
