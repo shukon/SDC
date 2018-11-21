@@ -13,7 +13,7 @@ class ClassificationNetwork(torch.nn.Module):
         super().__init__()
         gpu = torch.device('cuda')
 
-        self.use_sensor = True
+        self.use_sensor = False
 
         #view (****) this please
         self.action2name = {
