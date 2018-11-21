@@ -45,9 +45,15 @@
 	\item[b)]The module $training.py$ contains the training loop for the network. Read and understand its
 	function $train$. Why is it necessary to divide the data into batches? What is an epoch? What do
 	lines $43$ to $48$ do? Please answer shortly and precisely.\\
-	\sol It is necessary to divide your data into batches for 2 reasons. First there is less memory used to train the network and second the network learns faster with smaller batch sizes. A lot papers propagate a batch size of 64 as Optimal learning.\\
+	\sol It is helpful to divide your data into batches for two reasons.
+        First there is less memory used for a training epoch of the network, since we do not have to hold all data in memory for a
+        training update (only the data of one batch).
+        Second the network learns faster with smaller batch sizes, since there are many incremental updates to the
+        weights. By not using all the data in every iteration, we introduce a certain noise, which helps the gradient
+        descent.\\
 	An epoch is is one forward and one backward pass of all training data.\\
-	We take the batch of our training data, calculate the prediction of the network, compare them to the target values using the cross-entropy-loss-function. Then the loss is used to propagate the error back to the network to adapt the weights in the network. 
+	We take the batch of our training data, calculate the prediction of the network, compare them to the target values using the crossentropy-loss-function.
+        Then the loss is used to propagate the error back through the network to adapt the weights in the network. 
 	\item[c)] Define the set of action-classes you want to use and complete the class-methods actions to classes
 	and scores to action in $network.py$\\
 	\sol The provided data of the expert imitations comes as a set of three:
@@ -65,17 +71,26 @@
 		\{steer\_right and brake\}\\		
 		\{brake\}\\
 		\{gas\}\\
-		\{\}\\
-		Accelerating and steering makes no sense to us, because it would conclude in a donut. 
-	\item[c)] Can you achieve better results when
+		\{chill\}\\
+		Accelerating and steering at the same time makes no sense to us, because it would conclude in a driving a donut. 
+	\item[e)] Motivate your choice regarding the number of image-channels. Can you achieve better results when
 	changing the hyper-parameters? Can you explain this?\\\sol
-	Yes, it can be archived. As you change the Hyperparameter, you change the behaviour or the calculation of the network. Therefore it is possible, that you can optimize by changing them.\\
-	Low learningrate with few epochs results in a bad learning.
-	\item[d)] \begin{enumerate}
+        We use all three color-channels, since we expect the network to better interpret the important difference
+        between the green grass and the grey road! Regarding the hyperparameters:
+	Yes, it can be archieved. As you change the hyperparameters, you change the behaviour or the calculation of the network.
+        Therefore it is possible, that you can optimize by changing them. E.g. more epochs leads to a closer adaption to
+        the training data, the number of epochs can thus influence the ability to abstract a certain situation. Many
+        epochs lead to a low training error, however the network can only produce correct actions for situations very
+        similar to the training data. More layers increase the learning capacity, however it is difficult to find a
+       good number of epochs.\\
+	\item[f)] \begin{enumerate}
 		\item[(I)] What is ‘good’ training data? \\\sol
-		Good training data is data which contains every possible situation or situations with actions which are very close the reality. therefore trainingdata should 
+		Good training data is data which contains every possible situation or situations with actions which are very close the reality.
+                Therefore training-data should be versatile, contain many different situations to achieve good
+                generalization.
 		\item[(II)] Is there any problem with only perfect imitations?\\\sol
-		Perfect imitations are bad because the network can't adapt to situations which are not in the training data. Therefore the reaction is far from the expected reaction for a new situation.
+		Perfect imitations are bad because the network can't adapt to situations which are not in the training data.
+                The network needs to learn how to behave on unexpected situations and how to correct mistakes.
 	\end{enumerate}
 \end{enumerate}
 \section{Network Improvements}
