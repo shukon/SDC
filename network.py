@@ -38,11 +38,8 @@ class ClassificationNetwork(torch.nn.Module):
                    }
         self.name2onehot = {v : k for k, v in self.onehot2name.items()}
 
-        # Network
-
         self.conv1 = nn.Conv2d(3, 32, 9)
         self.conv2 = nn.Conv2d(32, 10, 5)
-    # an affine operation: y = Wx + b
         if self.use_sensor:
             self.fc1 = nn.Linear(16 * 10 * 5 * 5 + 7, 120)
         else:
@@ -59,9 +56,7 @@ class ClassificationNetwork(torch.nn.Module):
         return         torch.Tensor of size (batch_size, number_of_classes)
         """
         x = observation.permute([0,3,1,2])
-        # Max pooling over a (2, 2) windowgit
         x = F.max_pool2d(F.relu(self.conv1(x)), (2, 2))
-        # If the size is a square you can only specify a single number
         x = F.max_pool2d(F.relu(self.conv2(x)), 2)
         x = x.view(-1, self._num_flat_features(x))
         if self.use_sensor:
