@@ -95,7 +95,13 @@
 \end{enumerate}
 \section{Network Improvements}
 \begin{enumerate}[a)]
-	\item \textbf{Observations:} What does it do?\\\sol These enables you to encoperate informations of speed,abs,steer and gyroscope into your network. Therefore not only position of the vehicle can be considered by the network, but also any of these sensors. Therefore it is possible to make different conclusions for seemingly same situations.\\
+	\item \textbf{Observations:} What does it do?\\\sol
+          These enables you to encoperate informations of speed, abs, steer and gyroscope into your network.
+          Therefore not only positions of the vehicle can be considered by the network, but also any of these sensors.
+          Therefore it is possible to make different conclusions for seemingly same situations (sometimes the car would
+          just not drive because with the street-layout ahead, no gas would be optimal in most cases - however, with
+          sensor data, this does not happen because the network can see that with no acceleration it is never good to
+          not drive at all).\\
 	
 	How does the performance change?
 	\\\sol Curves after high speed passes now enable the car to brake first, as it would usually conclude into leaving the racetrack.	
