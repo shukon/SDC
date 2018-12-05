@@ -29,21 +29,27 @@ class DQN(nn.Module):
         self.fc2 = nn.Linear(120, 84)
         self.fc3 = nn.Linear(84, action_size)
 
-    def forward(self, observation):
+    def forward(self, observation, action):
         """ Forward pass to compute Q-values
         Parameters
         ----------
         observation: np.array
             array of state(s)
+        action: np.array
+            array of action(s)
         Returns
         ----------
         torch.Tensor
             Q-values
         """
+        # Perform convolution on the image-part of the input
         x = observation.permute([0,3,1,2])
         x = F.max_pool2d(F.relu(self.conv1(x)), (2, 2))
         x = F.max_pool2d(F.relu(self.conv2(x)), 2)
+        # Make one flat tensor out of x
         x = x.view(-1, self._num_flat_features(x))
+        # Add actions (as new additional input (TODO:), maybe with another fc-layer inbetween?)
+        x = torch.cat((x, actions), 1)
         if self.use_sensor:
             speed, abs_sensors, steering, gyroscope = self.extract_sensor_values(observation, x.shape[0])
             x = torch.cat((x, speed, abs_sensors, steering, gyroscope), 1)
