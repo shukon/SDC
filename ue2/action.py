@@ -47,7 +47,7 @@ def select_exploratory_action(state, policy_net, action_size, exploration, t):
 
     epsilon = exploration.value(t)
 
-    if random.random()<=epsilon :
+    if random.random() <= epsilon:
         return random.randint(0,action_size-1)
     else:
         return select_greedy_action(state,policy_net,action_size)
