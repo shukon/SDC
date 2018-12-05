@@ -46,13 +46,17 @@ class DQN(nn.Module):
         x = observation.permute([0,3,1,2])
         x = F.max_pool2d(F.relu(self.conv1(x)), (2, 2))
         x = F.max_pool2d(F.relu(self.conv2(x)), 2)
+
         # Make one flat tensor out of x
         x = x.view(-1, self._num_flat_features(x))
         # Add actions (as new additional input (TODO:), maybe with another fc-layer inbetween?)
         x = torch.cat((x, actions), 1)
+        # Add sensordata
         if self.use_sensor:
             speed, abs_sensors, steering, gyroscope = self.extract_sensor_values(observation, x.shape[0])
             x = torch.cat((x, speed, abs_sensors, steering, gyroscope), 1)
+
+        # Second part of network (without convolution)
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
