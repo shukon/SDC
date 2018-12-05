@@ -29,7 +29,7 @@ class DQN(nn.Module):
         self.fc2 = nn.Linear(120, 84)
         self.fc3 = nn.Linear(84, action_size)
 
-    def forward(self, observation, action):
+    def forward(self, observation):
         """ Forward pass to compute Q-values
         Parameters
         ----------
