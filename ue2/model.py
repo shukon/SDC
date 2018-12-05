@@ -59,6 +59,14 @@ class DQN(nn.Module):
         #x = F.softmax(x)
         return x
 
+    def _num_flat_features(self, x):
+        size = x.size()[1:]  # all dimensions except the batch dimension
+        num_features = 1
+        for s in size:
+            num_features *= s
+        return num_features
+
+
     def extract_sensor_values(self, observation, batch_size):
         """ Extract numeric sensor values from state pixels
         Parameters
