@@ -1,5 +1,6 @@
 import random
 import torch
+import math
 
 
 def select_greedy_action(state, policy_net, action_size):
@@ -17,8 +18,11 @@ def select_greedy_action(state, policy_net, action_size):
     int
         ID of selected action
     """
-
     # TODO: Select greedy action
+    best_policy = policy_net(state)
+    index = int(best_policy.argmax())
+    return index
+
 
 def select_exploratory_action(state, policy_net, action_size, exploration, t):
     """ Select an action according to an epsilon-greedy exploration strategy
@@ -39,8 +43,14 @@ def select_exploratory_action(state, policy_net, action_size, exploration, t):
     int
         ID of selected action
     """
-
     # TODO: Select exploratory action
+    action_policy = policy_net(state)
+    for x in range (1,100):
+        print(exploration.value(x/100))
+
+    return 1
+
+
 
 def get_action_set():
     """ Get the list of available actions
