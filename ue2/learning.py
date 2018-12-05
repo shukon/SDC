@@ -26,19 +26,30 @@ def perform_qlearning_step(policy_net, target_net, optimizer, replay_buffer, bat
     float
         loss value for current learning step
     """
+    #    1. Sample transitions from replay_buffer
+    obs_batch, act_batch, rew_batch, next_obs_batch, done_mask = replay_buffer.sample(batch_size)
 
+    #    2. Compute Q(s_t, a)
+    # ASSUMING ACTION IS AN INDEX
+    q_batch = np.array([policy_net(obs)[act] for obs, act in zip(obs_batch, act_batch)])
+
+    #    3. Compute \max_a Q(s_{t+1}, a) for all next states.
+    q_next_batch = np.array([max(target_net(obs)) for obs in next_obs_batch])
+
+    #    4. Mask next state values where episodes have terminated
+    # Following nature-paper page 7 Algorithm 1 this means replacing q_next_batch with rewards (so zero here) for terminations
+    q_next_batch = np.array([q if d == 0 else 0 for q, d in zip(q_next_batch, done_mask)])
+
+    #    5. Compute the target
+    target = np.array([r + gamma * q for r, q in zip(rew_batch, q_next_batch)])
+
+    #    6. Compute the loss
+    loss = torch.mean([(t - q)**2 for t, q in zip(target, q_batch)])
+
+    #    7. Calculate the gradients
+    #    8. Clip the gradients
+    #    9. Optimize the model
     # TODO: Run single Q-learning step
-    """ Steps: 
-        1. Sample transitions from replay_buffer
-        2. Compute Q(s_t, a)
-        3. Compute \max_a Q(s_{t+1}, a) for all next states.
-        4. Mask next state values where episodes have terminated
-        5. Compute the target
-        6. Compute the loss
-        7. Calculate the gradients
-        8. Clip the gradients
-        9. Optimize the model
-    """
 
 def update_target_net(policy_net, target_net):
     """ Update the target network
