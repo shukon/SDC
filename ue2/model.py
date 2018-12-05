@@ -15,10 +15,19 @@ class DQN(nn.Module):
         """
         super().__init__()
 
-        self.device = device 
+        self.device = device
         self.action_size = action_size
 
-        # TODO: Create network
+        self.use_sensor = False
+
+        self.conv1 = nn.Conv2d(3, 32, 9)
+        self.conv2 = nn.Conv2d(32, 10, 5)
+        if self.use_sensor:
+            self.fc1 = nn.Linear(16 * 10 * 5 * 5 + 7, 120)
+        else:
+            self.fc1 = nn.Linear(16 * 10 * 5 * 5, 120)
+        self.fc2 = nn.Linear(120, 84)
+        self.fc3 = nn.Linear(84, action_size)
 
     def forward(self, observation):
         """ Forward pass to compute Q-values
@@ -29,10 +38,20 @@ class DQN(nn.Module):
         Returns
         ----------
         torch.Tensor
-            Q-values  
+            Q-values
         """
-
-        # TODO: Forward pass through the network
+        x = observation.permute([0,3,1,2])
+        x = F.max_pool2d(F.relu(self.conv1(x)), (2, 2))
+        x = F.max_pool2d(F.relu(self.conv2(x)), 2)
+        x = x.view(-1, self._num_flat_features(x))
+        if self.use_sensor:
+            speed, abs_sensors, steering, gyroscope = self.extract_sensor_values(observation, x.shape[0])
+            x = torch.cat((x, speed, abs_sensors, steering, gyroscope), 1)
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        x = self.fc3(x)
+        #x = F.softmax(x)
+        return x
 
     def extract_sensor_values(self, observation, batch_size):
         """ Extract numeric sensor values from state pixels
