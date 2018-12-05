@@ -41,7 +41,7 @@ class DQN(nn.Module):
             Q-values
         """
         # Perform convolution on the image-part of the input
-        x = torch.tensor(observation)
+        x = torch.tensor(observation).permute([0,3,1,2])
         x = F.max_pool2d(F.relu(self.conv1(x)), (2, 2))
         x = F.max_pool2d(F.relu(self.conv2(x)), 2)
 
