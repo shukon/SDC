@@ -35,8 +35,6 @@ class DQN(nn.Module):
         ----------
         observation: np.array
             array of state(s)
-        action: np.array
-            array of action(s)
         Returns
         ----------
         torch.Tensor
@@ -49,8 +47,6 @@ class DQN(nn.Module):
 
         # Make one flat tensor out of x
         x = x.view(-1, self._num_flat_features(x))
-        # Add actions (as new additional input (TODO:), maybe with another fc-layer inbetween?)
-        x = torch.cat((x, actions), 1)
         # Add sensordata
         if self.use_sensor:
             speed, abs_sensors, steering, gyroscope = self.extract_sensor_values(observation, x.shape[0])
