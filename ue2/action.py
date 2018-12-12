@@ -42,12 +42,12 @@ def select_exploratory_action(state, policy_net, action_size, exploration, t):
     int
         ID of selected action
     """
-    action_policy = policy_net(state)
-    #for x in range (1,100):
-    #    print(exploration.value(x/100))
+    epsilon = exploration.value(t)
 
-    return 1
-
+    if random.random() <= epsilon:
+        return random.randint(0, action_size - 1)
+    else:
+        return select_greedy_action(state,policy_net, action_size)
 
 
 def get_action_set():
