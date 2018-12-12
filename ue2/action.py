@@ -1,3 +1,4 @@
+import logging
 import random
 import torch
 import math
@@ -19,6 +20,7 @@ def select_greedy_action(state, policy_net, action_size):
         ID of selected action
     """
     best_policy = policy_net(state)
+    logging.debug("Best policy: %s" % best_policy)
     index = int(best_policy.argmax())
     return index
 
@@ -45,9 +47,13 @@ def select_exploratory_action(state, policy_net, action_size, exploration, t):
     epsilon = exploration.value(t)
 
     if random.random() <= epsilon:
-        return random.randint(0, action_size - 1)
+        act = random.randint(0, action_size - 1)
+        logging.debug("Random action: %s" % act)
+        return act
     else:
-        return select_greedy_action(state,policy_net, action_size)
+        act = select_greedy_action(state,policy_net, action_size)
+        logging.debug("Greedy action: %s" % act)
+        return act
 
 
 def get_action_set():
