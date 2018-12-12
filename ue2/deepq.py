@@ -102,6 +102,7 @@ def learn(env,
     model_identifier: string
         identifier of the agent
     """
+    print("Start learning")
     episode_rewards = [0.0]
     training_losses = []
     actions = get_action_set()
@@ -129,6 +130,7 @@ def learn(env,
     obs = get_state(env.reset())
     
     # Iterate over the total number of time steps
+    print("Start iteration over timesteps")
     for t in range(total_timesteps):
 
         # Select action
@@ -156,11 +158,13 @@ def learn(env,
             episode_rewards.append(0.0)
 
         if t > learning_starts and t % train_freq == 0:
+            print("Train!")
             # Minimize the error in Bellman's equation on a batch sampled from replay buffer.
             loss = perform_qlearning_step(policy_net, target_net, optimizer, replay_buffer, batch_size, gamma, device)
             training_losses.append(loss)
 
         if t > learning_starts and t % target_network_update_freq == 0:
+            print("Update taget network")
             # Update target network periodically.
             update_target_net(policy_net, target_net)
 
