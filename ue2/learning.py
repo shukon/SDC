@@ -19,7 +19,7 @@ def perform_qlearning_step(policy_net, target_net, optimizer, replay_buffer, bat
     replay_buffer: ReplayBuffer
         replay memory storing transitions
     batch_size: int
-        size of batch to sample from replay memory 
+        size of batch to sample from replay memory
     gamma: float
         discount factor used in Q-learning update
     device: torch.device
@@ -75,6 +75,8 @@ def perform_qlearning_step(policy_net, target_net, optimizer, replay_buffer, bat
 
     #    9. Optimize the model
     optimizer.step()
+
+    return loss.item()
 
 def update_target_net(policy_net, target_net):
     """ Update the target network
