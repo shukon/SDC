@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -18,7 +19,7 @@ class DQN(nn.Module):
         self.device = device
         self.action_size = action_size
 
-        self.use_sensor = False
+        self.use_sensor = True
 
         self.conv1 = nn.Conv2d(3, 32, 9)
         self.conv2 = nn.Conv2d(32, 10, 5)
@@ -83,6 +84,7 @@ class DQN(nn.Module):
         torch.Tensors of size (batch_size, 1)
             Extracted numerical values
         """
+        observation = torch.tensor(observation)
         speed_crop = observation[:, 84:94, 12, 0].reshape(batch_size, -1)
         speed = speed_crop.sum(dim=1, keepdim=True) / 255
         abs_crop = observation[:, 84:94, 18:25:2, 2].reshape(batch_size, 10, 4)

@@ -164,6 +164,10 @@ def learn(env,
             # Update target network periodically.
             update_target_net(policy_net, target_net)
 
+        if t % (total_timesteps // 10) == 0:
+            # Save the trained policy network
+            torch.save(policy_net.state_dict(), model_identifier+'.pt') 
+
     # Save the trained policy network
     torch.save(policy_net.state_dict(), model_identifier+'.pt') 
 
