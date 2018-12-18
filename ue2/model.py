@@ -21,14 +21,25 @@ class DQN(nn.Module):
 
         self.use_sensor = True
 
-        self.conv1 = nn.Conv2d(3, 32, 9)
-        self.conv2 = nn.Conv2d(32, 10, 5)
+        self.softmax = False
+
+        conv1_filter_size = 3
+        conv2_filter_size = 2
+        conv1_size = 32
+        conv2_size = 64
+
+        denses = [256, 64, # 120, 52, ... add more dense layers by writing sizes here...
+                  action_size]
+        self.fcs = []  # dense forward layers
+
+        self.conv1 = nn.Conv2d(3, conv1_size, conv1_filter_size)
+        self.conv2 = nn.Conv2d(conv1_size, conv2_size, conv2_filter_size)
         if self.use_sensor:
-            self.fc1 = nn.Linear(16 * 10 * 5 * 5 + 7, 120)
+            self.fcs.append(nn.Linear(16 * conv2_size * conv2_filter_size * conv2_filter_size + 7, denses[0]))
         else:
-            self.fc1 = nn.Linear(16 * 10 * 5 * 5, 120)
-        self.fc2 = nn.Linear(120, 84)
-        self.fc3 = nn.Linear(84, action_size)
+            self.fcs.append(nn.Linear(16 * conv2_size * conv2_filter_size * conv2_filter_size, denses[0]))
+        for in_size, out_size in zip(denses[:-1], denses[1:]):
+            self.fcs.append(nn.Linear(in_size, out_size))
 
     def forward(self, observation):
         """ Forward pass to compute Q-values
@@ -42,8 +53,8 @@ class DQN(nn.Module):
             Q-values
         """
         # Perform convolution on the image-part of the input
-        x = torch.tensor(observation).permute([0,3,1,2])
-        x = F.max_pool2d(F.relu(self.conv1(x)), (2, 2))
+        x = torch.tensor(observation).permute([0, 3, 1, 2])
+        x = F.max_pool2d(F.relu(self.conv1(x)), 5)
         x = F.max_pool2d(F.relu(self.conv2(x)), 2)
 
         # Make one flat tensor out of x
@@ -54,10 +65,15 @@ class DQN(nn.Module):
             x = torch.cat((x, speed, abs_sensors, steering, gyroscope), 1)
 
         # Second part of network (without convolution)
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = self.fc3(x)
-        #x = F.softmax(x)
+        for fc in self.fcs[:-1]:
+            x = F.relu(fc(x))
+        # Last one without relu (just linear) if not softmax
+        if self.softmax:
+            x = F.relu(self.fcs[-1](x))
+            x = F.softmax(x)
+        else:
+            x = self.fcs[-1](x)
+
         return x
 
     def _num_flat_features(self, x):

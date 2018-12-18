@@ -129,50 +129,55 @@ def learn(env,
     obs = get_state(env.reset())
     
     # Iterate over the total number of time steps
-    for t in range(total_timesteps):
+    try:
+        for t in range(total_timesteps):
 
-        # Select action
-        action_id = select_exploratory_action(obs, policy_net, action_size, exploration, t)
-        env_action = actions[action_id]
+            # Select action
+            action_id = select_exploratory_action(obs, policy_net, action_size, exploration, t)
+            env_action = actions[action_id]
 
-        # Perform action fram_skip-times
-        for f in range(action_repeat):
-            new_obs, rew, done, _ = env.step(env_action)
-            episode_rewards[-1] += rew
-            # if episode_rewards[-1] < termination_reward:
-            #     done = True
+            # Perform action fram_skip-times
+            for f in range(action_repeat):
+                new_obs, rew, done, _ = env.step(env_action)
+                episode_rewards[-1] += rew
+                # if episode_rewards[-1] < termination_reward:
+                #     done = True
+                if done:
+                    break
+
+            # Store transition in the replay buffer.
+            new_obs = get_state(new_obs)
+            replay_buffer.add(obs, action_id, rew, new_obs, float(done))
+            obs = new_obs
+
             if done:
-                break
+                # Start new episode after previous episode has terminated
+                print("timestep: " + str(t) + " \t reward: " + str(episode_rewards[-1]))
+                obs = get_state(env.reset())
+                episode_rewards.append(0.0)
 
-        # Store transition in the replay buffer.
-        new_obs = get_state(new_obs)
-        replay_buffer.add(obs, action_id, rew, new_obs, float(done))
-        obs = new_obs
+            if t > learning_starts and t % train_freq == 0:
+                # Minimize the error in Bellman's equation on a batch sampled from replay buffer.
+                loss = perform_qlearning_step(policy_net, target_net, optimizer, replay_buffer, batch_size, gamma, device)
+                training_losses.append(loss)
 
-        if done:
-            # Start new episode after previous episode has terminated
-            print("timestep: " + str(t) + " \t reward: " + str(episode_rewards[-1]))
-            obs = get_state(env.reset())
-            episode_rewards.append(0.0)
+            if t > learning_starts and t % target_network_update_freq == 0:
+                # Update target network periodically.
+                update_target_net(policy_net, target_net)
 
-        if t > learning_starts and t % train_freq == 0:
-            # Minimize the error in Bellman's equation on a batch sampled from replay buffer.
-            loss = perform_qlearning_step(policy_net, target_net, optimizer, replay_buffer, batch_size, gamma, device)
-            training_losses.append(loss)
+            if total_timesteps % 1000 == 0:
+                # Save the trained policy network
+                torch.save(policy_net.state_dict(), model_identifier+'.pt') 
 
-        if t > learning_starts and t % target_network_update_freq == 0:
-            # Update target network periodically.
-            update_target_net(policy_net, target_net)
+                # Visualize the training loss and cumulative reward curves
+                visualize_training(episode_rewards, training_losses, model_identifier)
+    except KeyboardInterrupt:
+        pass
+    finally:
 
-        if t % (total_timesteps // 10) == 0:
-            # Save the trained policy network
-            torch.save(policy_net.state_dict(), model_identifier+'.pt') 
+        # Save the trained policy network
+        torch.save(policy_net.state_dict(), model_identifier+'.pt') 
 
-    # Save the trained policy network
-    torch.save(policy_net.state_dict(), model_identifier+'.pt') 
-
-    # Visualize the training loss and cumulative reward curves
-    visualize_training(episode_rewards, training_losses, model_identifier)
-    
-
+        # Visualize the training loss and cumulative reward curves
+        visualize_training(episode_rewards, training_losses, model_identifier)
 
