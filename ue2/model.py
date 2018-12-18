@@ -23,17 +23,17 @@ class DQN(nn.Module):
 
         self.softmax = False
 
-        conv1_filter_size = 3
-        conv2_filter_size = 2
-        conv1_size = 32
-        conv2_size = 64
+        conv1_filter_size = 16
+        conv2_filter_size = 8
+        conv1_size = 16
+        conv2_size = 32
 
         denses = [256, 64, # 120, 52, ... add more dense layers by writing sizes here...
                   action_size]
         self.fcs = []  # dense forward layers
 
-        self.conv1 = nn.Conv2d(3, conv1_size, conv1_filter_size)
-        self.conv2 = nn.Conv2d(conv1_size, conv2_size, conv2_filter_size)
+        self.conv1 = nn.Conv2d(3, conv1_size, conv1_filter_size, stride=2)
+        self.conv2 = nn.Conv2d(conv1_size, conv2_size, conv2_filter_size, stride=2)
         if self.use_sensor:
             self.fcs.append(nn.Linear(16 * conv2_size * conv2_filter_size * conv2_filter_size + 7, denses[0]))
         else:
