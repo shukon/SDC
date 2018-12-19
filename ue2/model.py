@@ -28,16 +28,18 @@ class DQN(nn.Module):
         conv1_size = 16
         conv2_size = 32
 
-        denses = [256, 64, # 120, 52, ... add more dense layers by writing sizes here...
+        denses = [256,  # 64, # 120, 52, ... add more dense layers by writing sizes here...
                   action_size]
         self.fcs = []  # dense forward layers
 
-        self.conv1 = nn.Conv2d(3, conv1_size, conv1_filter_size, stride=2)
-        self.conv2 = nn.Conv2d(conv1_size, conv2_size, conv2_filter_size, stride=2)
+        self.conv1 = nn.Conv2d(3, conv1_size, conv1_filter_size)
+        self.conv2 = nn.Conv2d(conv1_size, conv2_size, conv2_filter_size)
         if self.use_sensor:
-            self.fcs.append(nn.Linear(16 * conv2_size * conv2_filter_size * conv2_filter_size + 7, denses[0]))
+            tmp_size = 16 * conv2_size * conv2_filter_size * conv2_filter_size + 7
         else:
-            self.fcs.append(nn.Linear(16 * conv2_size * conv2_filter_size * conv2_filter_size, denses[0]))
+            tmp_size = 16 * conv2_size * conv2_filter_size * conv2_filter_size
+        print(tmp_size)
+        self.fcs.append(nn.Linear(tmp_size, denses[0]))
         for in_size, out_size in zip(denses[:-1], denses[1:]):
             self.fcs.append(nn.Linear(in_size, out_size))
 
@@ -64,6 +66,8 @@ class DQN(nn.Module):
             speed, abs_sensors, steering, gyroscope = self.extract_sensor_values(observation, x.shape[0])
             x = torch.cat((x, speed, abs_sensors, steering, gyroscope), 1)
 
+        x = torch.div(x, 255)
+        print(x.shape)
         # Second part of network (without convolution)
         for fc in self.fcs[:-1]:
             x = F.relu(fc(x))
