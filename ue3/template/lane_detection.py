@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from scipy.signal import find_peaks
 from scipy.interpolate import splprep, splev
 from scipy.optimize import minimize
+from scipy.spatial import distance
 import time
 
 
@@ -48,7 +49,6 @@ class LaneDetection:
         gray = 0.2989 * r + 0.5870 * g + 0.1140 * b
         cropped = gray[:self.cut_size, :]
         cropped = np.expand_dims(cropped, axis=2)
-        print(cropped.shape)
         return cropped
 
 
@@ -67,10 +67,8 @@ class LaneDetection:
             gradient_sum 68x96x1
 
         '''
-        print(gray_image.shape)
         img = np.gradient(gray_image, axis=(0, 1))
         img = img[0] + img[1]
-        print(img.shape)
         img[img > self.gradient_threshold] = 0
         return img
 
@@ -90,11 +88,15 @@ class LaneDetection:
 
         '''
         gradient_sum = np.squeeze(gradient_sum)
-        print(gradient_sum.shape)
         argmaxima = []
-        for row in gradient_sum:
-            argmaxima.append(find_peaks(row, distance=1)[0])
-        print(argmaxima)
+        for idx, row in enumerate(gradient_sum):
+            peaks = find_peaks(row, distance=1)[0]
+            if isinstance(peaks, int):
+                argmaxima.append((peaks, idx))
+            else:
+                for p in peaks:
+                    argmaxima.append((p, idx))
+        #print(np.array(argmaxima))
        
         return argmaxima
 
@@ -195,10 +197,33 @@ class LaneDetection:
             # 3- delete maximum from maxima
             # 4- stop loop if there is no maximum left 
             #    or if the distance to the next one is too big (>=100)
+            print("Points 1 " + str(lane_boundary1_points))
 
-            # lane_boundary 1
+            while len(maxima) >= 2:
+                # lane_boundary 1
+                def add(points):
+                    print("Maxima: " + str(maxima))
 
-            # lane_boundary 2
+                    print("Points 1: " + str(lane_boundary1_points))
+                    best, point, idx, counter = 10000000000, None, 0, 0
+                    for m in maxima:
+                        dist = distance.euclidean(points[-1], m)
+                        if dist < best:
+                            idx = counter
+                            best = dist
+                            point = np.array(m)
+                        counter += 1
+                    point = np.expand_dims(point, axis=0)
+                    print(point.shape)
+                    print(points.shape)
+                    points = np.concatenate((points, point), axis=0)
+                    print(points.shape)
+
+                    print(maxima)
+                    maxima.remove((point[0][0], point[0][1]))
+                    return points
+                lane_boundary1_points = add(lane_boundary1_points)
+                lane_boundary2_points = add(lane_boundary2_points)
 
             ################
             
@@ -213,6 +238,9 @@ class LaneDetection:
 
                 # Pay attention: the first lane_boundary point might occur twice
                 # lane_boundary 1
+                lane_boundary1 = splprep(lane_boundary1_points, s=self.spline_smoothness)
+                lane_boundary2 = splprep(lane_boundary2_points, s=self.spline_smoothness)
+
 
                 # lane_boundary 2
                 pass
@@ -228,6 +256,7 @@ class LaneDetection:
 
         self.lane_boundary1_old = lane_boundary1
         self.lane_boundary2_old = lane_boundary2
+        print(lane_boundary1)
 
         # output the spline
         return lane_boundary1, lane_boundary2
@@ -239,6 +268,7 @@ class LaneDetection:
         '''
         # evaluate spline for 6 different spline parameters.
         t = np.linspace(0, 1, 6)
+        print(self.lane_boundary1_old)
         lane_boundary1_points_points = np.array(splev(t, self.lane_boundary1_old))
         lane_boundary2_points_points = np.array(splev(t, self.lane_boundary2_old))
         
