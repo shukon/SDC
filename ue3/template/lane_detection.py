@@ -69,12 +69,11 @@ class LaneDetection:
             gradient_sum 68x96x1
 
         '''
-        img = np.gradient(gray_image, axis=(1))
-
-        #img = img[0] + img[1]
-        img[img <= self.gradient_threshold] = 0
-        smp.toimage(img).show()
-        raise
+        img = np.gradient(gray_image, axis=(0, 1))
+        img = img[0] + img[1]
+        img[img < self.gradient_threshold] = 0
+	smp.toimage(img).show()
+	raise
         return img
 
 
@@ -95,7 +94,7 @@ class LaneDetection:
         gradient_sum = np.squeeze(gradient_sum)
         argmaxima = []
         for idx, row in enumerate(gradient_sum):
-            peaks = find_peaks(row, distance=1)[0]
+            peaks = find_peaks(row, distance=self.distance_maxima_gradient)[0]
             if isinstance(peaks, int):
                 argmaxima.append((peaks, idx))
             else:
@@ -202,7 +201,7 @@ class LaneDetection:
             # 3- delete maximum from maxima
             # 4- stop loop if there is no maximum left
             #    or if the distance to the next one is too big (>=100)
-            print("Points 1 " + str(lane_boundary1_points))
+            print("Points 1 before " + str(lane_boundary1_points))
 
             while len(maxima) >= 2:
                 # lane_boundary 1
@@ -210,33 +209,33 @@ class LaneDetection:
                     best, point, idx, counter = 10000000000, None, 0, 0
                     for m in maxima:
                         dist = distance.euclidean(points[-1], m)
-                        if (dist > 100 or points.shape[0] == 10) and allowbreak:
-                            return points, True
                         if dist < best:
+                            print("Dist from {} to {} is {}: ".format(str(points[-1]), str(m), str(dist)))
                             idx = counter
                             best = dist
                             point = np.array(m)
                         counter += 1
+                    if (best > 40 or points.shape[0] >= 10) and allowbreak:
+                        print("Points shape on break" + str(points.shape))
+                        return points, True
+                    #if (dist > 10 or points.shape[0] == 10) and allowbreak:
+                    #    return points, True
                     point = np.expand_dims(point, axis=0)
-                    print(point.shape)
-                    print(points.shape)
                     points = np.concatenate((points, point), axis=0)
-                    print(points.shape)
 
-                    print(maxima)
                     maxima.remove((point[0][0], point[0][1]))
                     return points, False
-                lane_boundary1_points, stop = add(lane_boundary1_points, allowbreak=True)
-                if stop: break
-                lane_boundary2_points, stop = add(lane_boundary2_points)
                 print("########")
                 print(lane_boundary1_points.shape)
                 print(lane_boundary2_points.shape)
                 print("########")
-
+                lane_boundary1_points, stop = add(lane_boundary1_points, allowbreak=True)
                 if stop: break
+                lane_boundary2_points, stop = add(lane_boundary2_points)
+                if stop: break
+
             print("Points 1: " + str(lane_boundary1_points))
-            print(lane_boundary1_points.shape)
+            print("Points 2: " + str(lane_boundary2_points))
 
             ################
 
@@ -295,4 +294,3 @@ class LaneDetection:
         plt.ylim((-0.5,95.5))
         plt.gca().axes.get_xaxis().set_visible(False)
         plt.gca().axes.get_yaxis().set_visible(False)
-        fig.canvas.flush_events()
