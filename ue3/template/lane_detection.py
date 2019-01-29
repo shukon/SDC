@@ -72,8 +72,8 @@ class LaneDetection:
         img = np.gradient(gray_image, axis=(0, 1))
         img = img[0] + img[1]
         img[img < self.gradient_threshold] = 0
-	smp.toimage(img).show()
-	raise
+        smp.toimage(img).show()
+        raise
         return img
 
 
