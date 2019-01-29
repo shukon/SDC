@@ -67,8 +67,8 @@ class LaneDetection:
             gradient_sum 68x96x1
 
         '''
-        img = np.gradient(gray_image, axis=(0, 1))
-        img = img[0] + img[1]
+        img = np.gradient(gray_image, axis=(1))
+        #img = img[0] + img[1]
         img[img > self.gradient_threshold] = 0
         return img
 
@@ -246,9 +246,11 @@ class LaneDetection:
 
                 # Pay attention: the first lane_boundary point might occur twice
                 # lane_boundary 1
-                lane_boundary1 = splprep(lane_boundary1_points, s=self.spline_smoothness, k=1)
+                print("mklanfonfnadon")
+                lane_boundary1 = splprep(lane_boundary1_points, k=1,s=self.spline_smoothness)[0]
+                print(lane_boundary1)
                 # lane_boundary 2
-                lane_boundary2 = splprep(lane_boundary2_points, s=self.spline_smoothness, k=1)
+                lane_boundary2 = splprep(lane_boundary2_points, k=1,s=self.spline_smoothness)[0]
             else:
                 lane_boundary1 = self.lane_boundary1_old
                 lane_boundary2 = self.lane_boundary2_old
@@ -260,7 +262,7 @@ class LaneDetection:
 
         self.lane_boundary1_old = lane_boundary1
         self.lane_boundary2_old = lane_boundary2
-        print(lane_boundary1)
+        print(self.lane_boundary1_old)
 
         # output the spline
         return lane_boundary1, lane_boundary2
