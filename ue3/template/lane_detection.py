@@ -4,6 +4,7 @@ from scipy.signal import find_peaks
 from scipy.interpolate import splprep, splev
 from scipy.optimize import minimize
 from scipy.spatial import distance
+import scipy.misc as smp
 import time
 
 
@@ -11,7 +12,7 @@ class LaneDetection:
     '''
     Lane detection module using edge detection and b-spline fitting
 
-    args: 
+    args:
         cut_size (cut_size=68) cut the image at the front of the car
         spline_smoothness (default=10)
         gradient_threshold (default=14)
@@ -32,7 +33,7 @@ class LaneDetection:
     def cut_gray(self, state_image_full):
         '''
         ##### TODO #####
-        This function should cut the imagen at the front end of the car (e.g. pixel row 68) 
+        This function should cut the imagen at the front end of the car (e.g. pixel row 68)
         and translate to grey scale
 
         input:
@@ -48,17 +49,18 @@ class LaneDetection:
         r, g, b = rgb[:,:,0], rgb[:,:,1], rgb[:,:,2]
         gray = 0.2989 * r + 0.5870 * g + 0.1140 * b
         cropped = gray[:self.cut_size, :]
-        cropped = np.expand_dims(cropped, axis=2)
+        #cropped = np.expand_dims(cropped, axis=2)
+        print(cropped)
         return cropped
 
 
     def edge_detection(self, gray_image):
         '''
         ##### TODO #####
-        In order to find edges in the gray state image, 
+        In order to find edges in the gray state image,
         this function should derive the absolute gradients of the gray state image.
-        Derive the absolute gradients using numpy for each pixel. 
-        To ignore small gradients, set all gradients below a threshold (self.gradient_threshold) to zero. 
+        Derive the absolute gradients using numpy for each pixel.
+        To ignore small gradients, set all gradients below a threshold (self.gradient_threshold) to zero.
 
         input:
             gray_state_image 68x96x1
@@ -68,8 +70,11 @@ class LaneDetection:
 
         '''
         img = np.gradient(gray_image, axis=(1))
+
         #img = img[0] + img[1]
-        img[img > self.gradient_threshold] = 0
+        img[img <= self.gradient_threshold] = 0
+        smp.toimage(img).show()
+        raise
         return img
 
 
@@ -77,7 +82,7 @@ class LaneDetection:
         '''
         ##### TODO #####
         This function should output arguments of local maxima for each row of the gradient image.
-        You can use scipy.signal.find_peaks to detect maxima. 
+        You can use scipy.signal.find_peaks to detect maxima.
         Hint: Use distance argument for a better robustness.
 
         input:
@@ -97,33 +102,33 @@ class LaneDetection:
                 for p in peaks:
                     argmaxima.append((p, idx))
         #print(np.array(argmaxima))
-       
+
         return argmaxima
 
 
     def find_first_lane_point(self, gradient_sum):
         '''
         Find the first lane_boundaries points above the car.
-        Special cases like just detecting one lane_boundary or more than two are considered. 
-        Even though there is space for improvement ;) 
+        Special cases like just detecting one lane_boundary or more than two are considered.
+        Even though there is space for improvement ;)
 
         input:
             gradient_sum 68x96x1
 
-        output: 
+        output:
             lane_boundary1_startpoint
             lane_boundary2_startpoint
             lanes_found  true if lane_boundaries were found
         '''
-        
+
         # Variable if lanes were found or not
         lanes_found = False
         row = 0
 
         # loop through the rows
         while not lanes_found:
-            
-            # Find peaks with min distance of at least 3 pixel 
+
+            # Find peaks with min distance of at least 3 pixel
             gradient_sum = np.squeeze(gradient_sum)
             argmaxima = find_peaks(gradient_sum[row],distance=3)[0]
             gradient_sum = np.expand_dims(gradient_sum, axis=2)
@@ -134,11 +139,11 @@ class LaneDetection:
 
                 if argmaxima[0] < 48:
                     lane_boundary2_startpoint = np.array([[0,  row]])
-                else: 
+                else:
                     lane_boundary2_startpoint = np.array([[96,  row]])
 
                 lanes_found = True
-            
+
             # if 2 lane_boundaries are found
             elif argmaxima.shape[0] == 2:
                 lane_boundary1_startpoint = np.array([[argmaxima[0],  row]])
@@ -154,7 +159,7 @@ class LaneDetection:
                 lanes_found = True
 
             row += 1
-            
+
             # if no lane_boundaries are found
             if row == self.cut_size:
                 lane_boundary1_startpoint = np.array([[0,  0]])
@@ -167,7 +172,7 @@ class LaneDetection:
     def lane_detection(self, state_image_full):
         '''
         ##### TODO #####
-        This function should perform the road detection 
+        This function should perform the road detection
 
         args:
             state_image_full [96, 96, 3]
@@ -189,13 +194,13 @@ class LaneDetection:
 
         # if no lane was found,use lane_boundaries of the preceding step
         if lane_found:
-            
+
             ##### TODO #####
-            #  in every iteration: 
-            # 1- find maximum/edge with the lowest distance to the last lane boundary point 
+            #  in every iteration:
+            # 1- find maximum/edge with the lowest distance to the last lane boundary point
             # 2- append maxium to lane_boundary1_points or lane_boundary2_points
             # 3- delete maximum from maxima
-            # 4- stop loop if there is no maximum left 
+            # 4- stop loop if there is no maximum left
             #    or if the distance to the next one is too big (>=100)
             print("Points 1 " + str(lane_boundary1_points))
 
@@ -234,13 +239,13 @@ class LaneDetection:
             print(lane_boundary1_points.shape)
 
             ################
-            
+
 
             ##### TODO #####
-            # spline fitting using scipy.interpolate.splprep 
+            # spline fitting using scipy.interpolate.splprep
             # and the arguments self.spline_smoothness
-            # 
-            # if there are more lane_boundary points points than spline parameters 
+            #
+            # if there are more lane_boundary points points than spline parameters
             # else use perceding spline
             if lane_boundary1_points.shape[0] > 4 and lane_boundary2_points.shape[0] > 4:
 
@@ -277,7 +282,7 @@ class LaneDetection:
         print(self.lane_boundary1_old)
         lane_boundary1_points_points = np.array(splev(t, self.lane_boundary1_old))
         lane_boundary2_points_points = np.array(splev(t, self.lane_boundary2_old))
-        
+
         plt.gcf().clear()
         plt.imshow(state_image_full[::-1])
         plt.plot(lane_boundary1_points_points[0], lane_boundary1_points_points[1]+96-self.cut_size, linewidth=5, color='orange')
