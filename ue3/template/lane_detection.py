@@ -41,8 +41,15 @@ class LaneDetection:
             gray_state_image 68x96x1
 
         '''
-        
-        return gray_state_image[::-1] 
+        #img_gray = np.average(state_image_full, weights=[0.299, 0.587, 0.114], axis=2)
+        print(state_image_full.shape)
+        rgb = state_image_full
+        r, g, b = rgb[:,:,0], rgb[:,:,1], rgb[:,:,2]
+        gray = 0.2989 * r + 0.5870 * g + 0.1140 * b
+        cropped = gray[:self.cut_size, :]
+        cropped = np.expand_dims(cropped, axis=2)
+        print(cropped.shape)
+        return cropped
 
 
     def edge_detection(self, gray_image):
@@ -60,8 +67,12 @@ class LaneDetection:
             gradient_sum 68x96x1
 
         '''
-        
-        return gradient_sum
+        print(gray_image.shape)
+        img = np.gradient(gray_image, axis=(0, 1))
+        img = img[0] + img[1]
+        print(img.shape)
+        img[img > self.gradient_threshold] = 0
+        return img
 
 
     def find_maxima_gradient_rowwise(self, gradient_sum):
@@ -78,7 +89,13 @@ class LaneDetection:
             maxima (np.array) 2x Number_maxima
 
         '''
-
+        gradient_sum = np.squeeze(gradient_sum)
+        print(gradient_sum.shape)
+        argmaxima = []
+        for row in gradient_sum:
+            argmaxima.append(find_peaks(row, distance=1)[0])
+        print(argmaxima)
+       
         return argmaxima
 
 
@@ -105,7 +122,9 @@ class LaneDetection:
         while not lanes_found:
             
             # Find peaks with min distance of at least 3 pixel 
+            gradient_sum = np.squeeze(gradient_sum)
             argmaxima = find_peaks(gradient_sum[row],distance=3)[0]
+            gradient_sum = np.expand_dims(gradient_sum, axis=2)
 
             # if one lane_boundary is found
             if argmaxima.shape[0] == 1:
@@ -196,6 +215,7 @@ class LaneDetection:
                 # lane_boundary 1
 
                 # lane_boundary 2
+                pass
                 
             else:
                 lane_boundary1 = self.lane_boundary1_old
