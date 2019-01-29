@@ -201,13 +201,12 @@ class LaneDetection:
 
             while len(maxima) >= 2:
                 # lane_boundary 1
-                def add(points):
-                    print("Maxima: " + str(maxima))
-
-                    print("Points 1: " + str(lane_boundary1_points))
+                def add(points, allowbreak=False):
                     best, point, idx, counter = 10000000000, None, 0, 0
                     for m in maxima:
                         dist = distance.euclidean(points[-1], m)
+                        if (dist > 100 or points.shape[0] == 10) and allowbreak:
+                            return points, True
                         if dist < best:
                             idx = counter
                             best = dist
@@ -221,9 +220,18 @@ class LaneDetection:
 
                     print(maxima)
                     maxima.remove((point[0][0], point[0][1]))
-                    return points
-                lane_boundary1_points = add(lane_boundary1_points)
-                lane_boundary2_points = add(lane_boundary2_points)
+                    return points, False
+                lane_boundary1_points, stop = add(lane_boundary1_points, allowbreak=True)
+                if stop: break
+                lane_boundary2_points, stop = add(lane_boundary2_points)
+                print("########")
+                print(lane_boundary1_points.shape)
+                print(lane_boundary2_points.shape)
+                print("########")
+
+                if stop: break
+            print("Points 1: " + str(lane_boundary1_points))
+            print(lane_boundary1_points.shape)
 
             ################
             
@@ -238,13 +246,9 @@ class LaneDetection:
 
                 # Pay attention: the first lane_boundary point might occur twice
                 # lane_boundary 1
-                lane_boundary1 = splprep(lane_boundary1_points, s=self.spline_smoothness)
-                lane_boundary2 = splprep(lane_boundary2_points, s=self.spline_smoothness)
-
-
+                lane_boundary1 = splprep(lane_boundary1_points, s=self.spline_smoothness, k=1)
                 # lane_boundary 2
-                pass
-                
+                lane_boundary2 = splprep(lane_boundary2_points, s=self.spline_smoothness, k=1)
             else:
                 lane_boundary1 = self.lane_boundary1_old
                 lane_boundary2 = self.lane_boundary2_old
